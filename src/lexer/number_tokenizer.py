@@ -60,9 +60,8 @@ class WholeNumberTokenizer:
     """
     NIMNA Whole Number Tokenizer
 
-    Yeh class whole numbers ko padhti hai,
-    validate karti hai aur sahi token return
-    karti hai.
+    Reads, validates and tokenizes whole numbers
+    according to NIMNA type ranges.
     """
 
     def __init__(self, filename="<nimna>"):
@@ -71,42 +70,41 @@ class WholeNumberTokenizer:
 
     def tokenize_number(self, raw_number, declared_type, line, column):
         """
-        Ek number ko tokenize karo.
+        Tokenize a whole number.
 
         Parameters:
-            raw_number    : str  — Source code se padha hua number
-            declared_type : str  — Developer ne kaunsa type declare kiya
-            line          : int  — Line number
-            column        : int  — Column number
+            raw_number    : str  — Raw number string from source code
+            declared_type : str  — Type declared by the developer
+            line          : int  — Line number in source file
+            column        : int  — Column number in source file
 
         Returns:
-            Token — Sahi token ya error token
+            Token — Valid token or error token
         """
 
-        # ── Step 1: String ko integer mein convert karo
+        # Step 1: Convert string to integer
         try:
             value = int(raw_number.replace('_', ''))
         except ValueError:
             return self._make_error_token(
-                f"'{raw_number}' valid whole number nahi hai.",
+                f"'{raw_number}' is not a valid whole number.",
                 line,
                 column
             )
 
-        # ── Step 2: Type declared hai toh range check karo
+        # Step 2: If type is declared, validate range
         if declared_type and declared_type in WHOLE_NUMBER_RANGES:
             range_info = WHOLE_NUMBER_RANGES[declared_type]
             in_range   = self._check_range(value, range_info)
 
             if not in_range:
                 return self._make_error_token(
-                    f"Value {value} type '{declared_type}' ki range se bahar hai. "
+                    f"Value {value} is out of range for type '{declared_type}'. "
                     f"({declared_type} range: {range_info['min']} to {range_info['max']})",
                     line,
                     column
                 )
 
-            # Sahi token return karo
             return Token(
                 TokenType.INTEGER,
                 value,
@@ -115,7 +113,7 @@ class WholeNumberTokenizer:
                 self.filename
             )
 
-        # ── Step 3: Type declare nahi kiya — auto detect karo
+        # Step 3: No type declared — auto detect
         detected_type = self._auto_detect_type(value)
 
         return Token(
@@ -129,10 +127,10 @@ class WholeNumberTokenizer:
 
     def validate_assignment(self, value, declared_type):
         """
-        Check karo ki value declared type mein fit hoti hai ya nahi.
+        Check if a value fits within the declared type range.
 
         Returns:
-            (bool, str) — (valid hai ya nahi, error message)
+            (bool, str) — (is valid, error message)
         """
 
         if declared_type not in WHOLE_NUMBER_RANGES:
@@ -143,12 +141,11 @@ class WholeNumberTokenizer:
 
         if not in_range:
             error_msg = (
-                f"Type Error: Value '{value}' type '{declared_type}' "
-                f"mein store nahi ho sakta.\n"
+                f"Type Error: Value '{value}' cannot be stored in type '{declared_type}'.\n"
                 f"  '{declared_type}' range: "
                 f"{range_info['min']} to {range_info['max']}\n"
-                f"  Tumhara value: {value}\n"
-                f"  Suggestion: '{self._auto_detect_type(value)}' use karo."
+                f"  Your value  : {value}\n"
+                f"  Suggestion  : Use '{self._auto_detect_type(value)}' instead."
             )
             return False, error_msg
 
@@ -157,14 +154,14 @@ class WholeNumberTokenizer:
 
     def _check_range(self, value, range_info):
         """
-        Check karo value range ke andar hai ya nahi.
+        Check if value is within the given range.
         """
         return range_info["min"] <= value <= range_info["max"]
 
 
     def _auto_detect_type(self, value):
         """
-        Value ke hisaab se automatically sahi type detect karo.
+        Automatically detect the best fitting type for a value.
         """
         for type_name, range_info in WHOLE_NUMBER_RANGES.items():
             if range_info["min"] <= value <= range_info["max"]:
@@ -174,7 +171,7 @@ class WholeNumberTokenizer:
 
     def get_type_info(self, type_name):
         """
-        Kisi type ki range information return karo.
+        Return range information for a given type.
         """
         if type_name in WHOLE_NUMBER_RANGES:
             info = WHOLE_NUMBER_RANGES[type_name]
@@ -185,12 +182,12 @@ class WholeNumberTokenizer:
                 f"Max     : {info['max']}\n"
                 f"Desc    : {info['desc']}"
             )
-        return f"Type '{type_name}' NIMNA mein exist nahi karta."
+        return f"Type '{type_name}' does not exist in NIMNA."
 
 
     def _make_error_token(self, message, line, column):
         """
-        Error token banao — invalid number ke liye.
+        Create an error token for an invalid number.
         """
         return Token(
             TokenType.UNKNOWN,
@@ -207,7 +204,7 @@ class WholeNumberTokenizer:
 
 def get_whole_type_for_value(value):
     """
-    Kisi value ke liye sabse chhota suitable type return karo.
+    Return the smallest suitable type for a given value.
     """
     for type_name, range_info in WHOLE_NUMBER_RANGES.items():
         if range_info["min"] <= value <= range_info["max"]:
@@ -217,7 +214,7 @@ def get_whole_type_for_value(value):
 
 def is_valid_for_type(value, type_name):
     """
-    Check karo value us type ke liye valid hai ya nahi.
+    Check if a value is valid for the given type.
     """
     if type_name not in WHOLE_NUMBER_RANGES:
         return False
@@ -227,7 +224,7 @@ def is_valid_for_type(value, type_name):
 
 def get_all_type_ranges():
     """
-    Sabhi types ki ranges print karo.
+    Print all NIMNA whole number type ranges.
     """
     print("=== NIMNA Whole Number Types ===")
     print("")
