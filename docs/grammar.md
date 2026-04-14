@@ -1,12 +1,14 @@
 # NIMNA Language — Complete Grammar Rules
-# Compiler : nimac
-# Version  : 2.0 (Updated)
-# Style    : Python readability + Java curly braces
+
+> **Compiler** : nimac  
+> **Version**  : 2.0  
+> **Style**    : Python readability + Java curly braces
 
 ---
 
 ## 1. PROGRAM STRUCTURE
 
+```
 program
     : statement*
     ;
@@ -30,11 +32,13 @@ statement
     | module_statement
     | expression_statement
     ;
+```
 
 ---
 
-## 2. MODULE & IMPORTS
+## 2. MODULE AND IMPORTS
 
+```
 module_statement
     : 'module' IDENTIFIER
     ;
@@ -47,16 +51,21 @@ bring_statement
 module_path
     : IDENTIFIER ('.' IDENTIFIER)*
     ;
+```
 
-Example:
-    module main
-    bring nimna.io
-    bring nimna.math
+**Example:**
+
+```nimna
+module main
+bring nimna.io
+bring nimna.math
+```
 
 ---
 
-## 3. VARIABLE & CONSTANT DECLARATIONS
+## 3. VARIABLE AND CONSTANT DECLARATIONS
 
+```
 let_statement
     : 'let' IDENTIFIER ':' type_name '=' expression
     | 'let' IDENTIFIER '=' expression
@@ -66,18 +75,23 @@ constant_statement
     : 'constant' IDENTIFIER ':' type_name '=' expression
     | 'constant' IDENTIFIER '=' expression
     ;
+```
 
-Example:
-    let name    : Text    = "NIMNA"
-    let age     : Whole   = 25
-    let score   : Decimal = 98.5
-    let active  : Truth   = true
-    constant MAX : Whole  = 100
+**Example:**
+
+```nimna
+let name     : Text    = "NIMNA"
+let age      : Whole   = 25
+let score    : Decimal = 98.5
+let active   : Truth   = true
+constant MAX : Whole   = 100
+```
 
 ---
 
 ## 4. FUNCTIONS
 
+```
 function_declaration
     : 'fn' IDENTIFIER '(' parameter_list? ')' '->' type_name '{' statement* '}'
     | 'fn' IDENTIFIER '(' parameter_list? ')' '{' statement* '}'
@@ -95,21 +109,26 @@ parameter
 return_statement
     : 'give' expression
     ;
+```
 
-Example:
-    fn add(a: Whole, b: Whole) -> Whole {
-        give a + b
-    }
+**Example:**
 
-    async fn fetch(url: Text) -> Task {
-        let data = await nimna.io.get(url)
-        give data
-    }
+```nimna
+fn add(a: Whole, b: Whole) -> Whole {
+    give a + b
+}
+
+async fn fetch(url: Text) -> Task {
+    let data = await nimna.io.get(url)
+    give data
+}
+```
 
 ---
 
 ## 5. OBJECT SYSTEM
 
+```
 object_declaration
     : 'object' IDENTIFIER '{' object_body '}'
     | 'object' IDENTIFIER 'grow' IDENTIFIER '{' object_body '}'
@@ -127,59 +146,77 @@ field_declaration
 method_declaration
     : function_declaration
     ;
+```
 
-Example:
-    object Animal {
-        open name  : Text
-        open sound : Text
+**Example:**
 
-        fn speak() {
-            nimna.io.print("{name} says {sound}")
-        }
+```nimna
+object Animal {
+    open name  : Text
+    open sound : Text
+
+    fn speak() {
+        nimna.io.print("{name} says {sound}")
     }
+}
 
-    object Dog grow Animal {
-        fn speak() {
-            nimna.io.print("{name} says Woof!")
-        }
+object Dog grow Animal {
+    fn speak() {
+        nimna.io.print("{name} says Woof!")
     }
+}
+```
 
 ---
 
-## 6. RECORD (Data Structure)
+## 6. RECORD
 
+```
 record_declaration
     : 'record' IDENTIFIER '{' field_declaration* '}'
     ;
+```
 
-Example:
-    record Person {
-        name : Text
-        age  : Whole
-        gpa  : Decimal
-    }
+**Example:**
+
+```nimna
+record Person {
+    name : Text
+    age  : Whole
+    gpa  : Decimal
+}
+```
 
 ---
 
-## 7. CONTROL FLOW
+## 7. IF STATEMENT
 
-### If Statement
+```
 if_statement
     : 'if' expression '{' statement* '}'
     | 'if' expression '{' statement* '}' 'else' '{' statement* '}'
-    | 'if' expression '{' statement* '}' 'elif' expression '{' statement* '}' ('else' '{' statement* '}')?
+    | 'if' expression '{' statement* '}' 'elif' expression '{' statement* '}'
+      ('else' '{' statement* '}')?
     ;
+```
 
-Example:
-    if age >= 18 {
-        nimna.io.print("Adult")
-    } elif age >= 13 {
-        nimna.io.print("Teenager")
-    } else {
-        nimna.io.print("Child")
-    }
+**Example:**
 
-### Match Statement
+```nimna
+if age >= 18 {
+    nimna.io.print("Adult")
+} elif age >= 13 {
+    nimna.io.print("Teenager")
+} else {
+    nimna.io.print("Child")
+}
+```
+
+---
+
+## 8. MATCH STATEMENT
+
+```
 match_statement
     : 'match' expression '{' match_arm* '}'
     ;
@@ -190,77 +227,120 @@ match_arm
     | '_'        '=>' expression
     | '_'        '=>' '{' statement* '}'
     ;
+```
 
-Example:
-    match age {
-        18  => nimna.io.print("Just adult!")
-        25  => nimna.io.print("Mid twenties!")
-        _   => nimna.io.print("Other age")
-    }
+**Example:**
+
+```nimna
+match age {
+    18 => nimna.io.print("Just adult!")
+    25 => nimna.io.print("Mid twenties!")
+    _  => nimna.io.print("Other age")
+}
+```
 
 ---
 
-## 8. LOOPS
+## 9. LOOPS
 
 ### For Loop
+
+```
 for_loop
     : 'for' IDENTIFIER 'from' range_expression '{' statement* '}'
     ;
+```
 
-Example:
-    for i from 0..5 {
-        nimna.io.print("{i}")
-    }
+**Example:**
 
-### While Loop
-while_loop
-    : 'while' expression '{' statement* '}'
-    ;
-
-Example:
-    let count: Whole = 0
-    while count < 10 {
-        nimna.io.print("{count}")
-        count += 1
-    }
-
-### Do-Until Loop
-do_until_loop
-    : 'do' '{' statement* '}' 'until' expression
-    ;
-
-Example:
-    let x: Whole = 0
-    do {
-        nimna.io.print("{x}")
-        x += 1
-    } until x == 5
-
-### Foreach Loop
-foreach_loop
-    : 'foreach' IDENTIFIER 'from' expression '{' statement* '}'
-    ;
-
-Example:
-    let fruits: Collection = ["Apple", "Mango", "Banana"]
-    foreach fruit from fruits {
-        nimna.io.print("{fruit}")
-    }
-
-### Parallel Loop
-parallel_loop
-    : 'parallel' 'for' IDENTIFIER 'from' range_expression '{' statement* '}'
-    ;
-
-Example:
-    parallel for i from 0..1000 {
-        process(i)
-    }
+```nimna
+for i from 0..5 {
+    nimna.io.print("Count: {i}")
+}
+```
 
 ---
 
-## 9. ERROR HANDLING
+### While Loop
 
+```
+while_loop
+    : 'while' expression '{' statement* '}'
+    ;
+```
+
+**Example:**
+
+```nimna
+let count: Whole = 0
+while count < 10 {
+    nimna.io.print("{count}")
+    count += 1
+}
+```
+
+---
+
+### Do-Until Loop
+
+```
+do_until_loop
+    : 'do' '{' statement* '}' 'until' expression
+    ;
+```
+
+**Example:**
+
+```nimna
+let x: Whole = 0
+do {
+    nimna.io.print("{x}")
+    x += 1
+} until x == 5
+```
+
+---
+
+### Foreach Loop
+
+```
+foreach_loop
+    : 'foreach' IDENTIFIER 'from' expression '{' statement* '}'
+    ;
+```
+
+**Example:**
+
+```nimna
+let fruits: Collection = ["Apple", "Mango", "Banana"]
+foreach fruit from fruits {
+    nimna.io.print("{fruit}")
+}
+```
+
+---
+
+### Parallel Loop
+
+```
+parallel_loop
+    : 'parallel' 'for' IDENTIFIER 'from' range_expression '{' statement* '}'
+    ;
+```
+
+**Example:**
+
+```nimna
+parallel for i from 0..1000 {
+    process(i)
+}
+```
+
+---
+
+## 10. ERROR HANDLING
+
+```
 attempt_statement
     : 'attempt' '{' statement* '}'
       'rescue' IDENTIFIER '{' statement* '}'
@@ -268,21 +348,26 @@ attempt_statement
       'rescue' IDENTIFIER '{' statement* '}'
       'always' '{' statement* '}'
     ;
+```
 
-Example:
-    attempt {
-        let result = nimna.math.divide(10, 0)
-        nimna.io.print("Result: {result}")
-    } rescue error {
-        nimna.io.print("Error: {error}")
-    } always {
-        nimna.io.print("Done!")
-    }
+**Example:**
+
+```nimna
+attempt {
+    let result = nimna.math.divide(10, 0)
+    nimna.io.print("Result: {result}")
+} rescue error {
+    nimna.io.print("Error: {error}")
+} always {
+    nimna.io.print("Done!")
+}
+```
 
 ---
 
-## 10. EXPRESSIONS
+## 11. EXPRESSIONS
 
+```
 expression
     : assignment_expression
     ;
@@ -349,11 +434,13 @@ primary_expression
     | type_constructor
     | '(' expression ')'
     ;
+```
 
 ---
 
-## 11. FUNCTION CALL
+## 12. FUNCTION CALL
 
+```
 function_call
     : IDENTIFIER '(' argument_list? ')'
     | IDENTIFIER '.' IDENTIFIER '(' argument_list? ')'
@@ -363,137 +450,167 @@ function_call
 argument_list
     : expression (',' expression)*
     ;
+```
 
-Example:
-    nimna.io.print("Hello")
-    nimna.io.print(x)
-    nimna.io.print("Value: {x}")
-    add(10, 20)
+**Example:**
+
+```nimna
+nimna.io.print("Hello")
+nimna.io.print(x)
+nimna.io.print("Value: {x}")
+add(10, 20)
+```
 
 ---
 
-## 12. TYPE CONSTRUCTOR (Type Casting)
+## 13. TYPE CONSTRUCTOR
 
+```
 type_constructor
     : type_name '(' expression ')'
     ;
+```
 
-Example:
-    let num : Whole   = Whole("25")
-    let dec : Decimal = Decimal(num)
-    let str : Text    = Text(100)
+**Example:**
 
----
-
-## 13. PRINT SYSTEM
-
-Two print functions:
-
-nimna.io.print()  → New line automatically add hoti hai
-nimna.io.write()  → Same line pe print hota hai
-
-Example:
-    nimna.io.print("Hello")    // Hello + newline
-    nimna.io.print("World")    // World + newline
-    // Output:
-    // Hello
-    // World
-
-    nimna.io.write("Hello ")   // Hello (no newline)
-    nimna.io.write("World")    // World (no newline)
-    // Output:
-    // Hello World
+```nimna
+let num : Whole   = Whole("25")
+let dec : Decimal = Decimal(num)
+let str : Text    = Text(100)
+```
 
 ---
 
-## 14. INPUT SYSTEM
+## 14. PRINT SYSTEM
 
-nimna.io.input()  → Text return karta hai
-                    Declared type dekh ke auto-convert hota hai
+| Function | Behavior |
+|---|---|
+| `nimna.io.print()` | Print + automatic new line |
+| `nimna.io.write()` | Print on same line, no new line |
 
-Example:
-    let name : Text    = nimna.io.input("Name: ")
-    let age  : Whole   = nimna.io.input("Age: ")
-    let price: Decimal = nimna.io.input("Price: ")
+**Example:**
 
----
+```nimna
+nimna.io.print("Hello")
+nimna.io.print("World")
+// Output:
+// Hello
+// World
 
-## 15. STRING INTERPOLATION
-
-Text literals mein curly braces se variable values insert karo.
-
-Example:
-    let name : Text  = "NIMNA"
-    let age  : Whole = 25
-
-    nimna.io.print("Hello {name}!")
-    // Output: Hello NIMNA!
-
-    nimna.io.print("Age is {age}")
-    // Output: Age is 25
-
-    nimna.io.print("Sum is {10 + 20}")
-    // Output: Sum is 30
+nimna.io.write("Hello ")
+nimna.io.write("World")
+// Output:
+// Hello World
+```
 
 ---
 
-## 16. AUTO TYPE CONVERSION RULES
+## 15. INPUT SYSTEM
 
-### Allowed (Automatic)
-Tiny    → Short, Whole, Long, Huge, Decimal, Precise, Exact, Text
-Short   → Whole, Long, Huge, Decimal, Precise, Exact, Text
-Whole   → Long, Huge, Decimal, Precise, Exact, Text
-Long    → Huge, Precise, Exact, Text
-Decimal → Precise, Exact, Text
-Precise → Exact, Text
-Text    → Whole, Decimal, Truth (sirf input se)
+| Function | Behavior |
+|---|---|
+| `nimna.io.input()` | Returns Text, auto-converts based on declared type |
 
-### Not Allowed (Error)
-Decimal → Whole   → Data loss possible
-Long    → Whole   → Overflow possible
-Whole   → Tiny    → Overflow possible
-Text    → Whole   → Variable se variable nahi (sirf input se)
+**Example:**
+
+```nimna
+let name  : Text    = nimna.io.input("Name: ")
+let age   : Whole   = nimna.io.input("Age: ")
+let price : Decimal = nimna.io.input("Price: ")
+```
 
 ---
 
-## 17. TYPE NAMES — All 25
+## 16. STRING INTERPOLATION
 
-Whole Numbers  : Tiny, Short, Whole, Long, Huge
-Decimal Numbers: Decimal, Precise, Exact
-Text Types     : Text, Letter, Symbol
-Logical        : Truth
-Raw            : Bit
-Collections    : Sequence, Collection, Mapping, Unique, Bundle
-Special        : Maybe, Outcome, Task, Flow, Action, Wild, Nothing
+> Use curly braces `{ }` inside Text literals to insert variable values or expressions.
 
----
+**Example:**
 
-## 18. OPERATOR PRECEDENCE (High to Low)
+```nimna
+let name : Text  = "NIMNA"
+let age  : Whole = 25
 
-1.  ( )              → Grouping
-2.  fn() [ ]         → Function call, index
-3.  **               → Power
-4.  !! - (unary)     → Logical NOT, negation
-5.  * / %            → Multiply, divide, remainder
-6.  + -              → Add, subtract
-7.  .. ..= ...       → Range
-8.  >> <<            → Bit shift
-9.  > < >= <=        → Comparison
-10. == !=            → Equality
-11. &                → Bitwise AND
-12. ^                → Bitwise XOR
-13. |                → Bitwise OR
-14. &&               → Logical AND
-15. ||               → Logical OR
-16. |> <|            → Pipeline
-17. as               → Type cast
-18. ?? ?: ?. ?!      → Null safety
-19. = += -= *= /=    → Assignment
+nimna.io.print("Hello {name}!")
+// Output: Hello NIMNA!
+
+nimna.io.print("Age: {age}")
+// Output: Age: 25
+
+nimna.io.print("Sum: {10 + 20}")
+// Output: Sum: 30
+```
 
 ---
 
-## 19. COMPLETE NIMNA STYLE EXAMPLE
+## 17. AUTO TYPE CONVERSION RULES
 
+### ✅ Allowed (Automatic)
+
+| From | To |
+|---|---|
+| `Tiny` | Short, Whole, Long, Huge, Decimal, Precise, Exact, Text |
+| `Short` | Whole, Long, Huge, Decimal, Precise, Exact, Text |
+| `Whole` | Long, Huge, Decimal, Precise, Exact, Text |
+| `Long` | Huge, Precise, Exact, Text |
+| `Decimal` | Precise, Exact, Text |
+| `Precise` | Exact, Text |
+| `Text` | Whole, Decimal, Truth *(input only)* |
+
+### ❌ Not Allowed (Error)
+
+| From | To | Reason |
+|---|---|---|
+| `Decimal` | Whole | Data loss possible |
+| `Long` | Whole | Overflow possible |
+| `Whole` | Tiny | Overflow possible |
+| `Text` | Whole | Variable to variable not allowed |
+
+---
+
+## 18. TYPE NAMES — All 25
+
+| Category | Types |
+|---|---|
+| Whole Numbers | `Tiny`, `Short`, `Whole`, `Long`, `Huge` |
+| Decimal Numbers | `Decimal`, `Precise`, `Exact` |
+| Text Types | `Text`, `Letter`, `Symbol` |
+| Logical | `Truth` |
+| Raw | `Bit` |
+| Collections | `Sequence`, `Collection`, `Mapping`, `Unique`, `Bundle` |
+| Special | `Maybe`, `Outcome`, `Task`, `Flow`, `Action`, `Wild`, `Nothing` |
+
+---
+
+## 19. OPERATOR PRECEDENCE
+
+| Priority | Operator | Description |
+|---|---|---|
+| 1 | `( )` | Grouping |
+| 2 | `fn()` `[ ]` | Function call, index |
+| 3 | `**` | Power |
+| 4 | `!!` `-` | Unary NOT, negation |
+| 5 | `*` `/` `%` | Multiply, divide, remainder |
+| 6 | `+` `-` | Add, subtract |
+| 7 | `..` `..=` `...` | Range |
+| 8 | `>>` `<<` | Bit shift |
+| 9 | `>` `<` `>=` `<=` | Comparison |
+| 10 | `==` `!=` | Equality |
+| 11 | `&` | Bitwise AND |
+| 12 | `^` | Bitwise XOR |
+| 13 | `\|` | Bitwise OR |
+| 14 | `&&` | Logical AND |
+| 15 | `\|\|` | Logical OR |
+| 16 | `\|>` `<\|` | Pipeline |
+| 17 | `as` | Type cast |
+| 18 | `??` `?:` `?.` `?!` | Null safety |
+| 19 | `=` `+=` `-=` `*=` `/=` | Assignment |
+
+---
+
+## 20. COMPLETE NIMNA PROGRAM EXAMPLE
+
+```nimna
 module main
 
 bring nimna.io
@@ -569,9 +686,9 @@ fn main() {
     }
 
     match age {
-        18  => nimna.io.print("Just adult!")
-        25  => nimna.io.print("Mid twenties!")
-        _   => nimna.io.print("Other age")
+        18 => nimna.io.print("Just adult!")
+        25 => nimna.io.print("Mid twenties!")
+        _  => nimna.io.print("Other age")
     }
 
     attempt {
@@ -592,3 +709,8 @@ fn main() {
     nimna.io.write("Output")
 
 }
+```
+
+---
+
+*NIMNA Language — Built with ❤️ for the AI era*
