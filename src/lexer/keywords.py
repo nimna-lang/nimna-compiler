@@ -32,6 +32,8 @@ KEYWORDS = {
     "until"   : TokenType.KEYWORD,
     "break"   : TokenType.KEYWORD,
     "skip"    : TokenType.KEYWORD,
+    "do"      : TokenType.KEYWORD,
+    "foreach" : TokenType.KEYWORD,
 
     # ─────────────────────────────────────
     # FUNCTION SYSTEM — 8 keywords
