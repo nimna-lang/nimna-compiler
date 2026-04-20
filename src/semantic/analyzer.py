@@ -158,6 +158,8 @@ class NIMNASemanticAnalyzer:
         self.scope_level         = 0
         self.current_function    = None
         self.current_return_type = None
+        self.loop_depth          = 0
+        self.function_depth      = 0
 
 
     # ==========================================
@@ -351,11 +353,30 @@ class NIMNASemanticAnalyzer:
         elif isinstance(stmt, AttemptStatement):
             self.analyze_attempt(stmt)
         elif isinstance(stmt, ReturnStatement):
-            self.analyze_return(stmt)
+            if self.function_depth == 0:
+                self.add_error(
+                    "'give' used outside of a function.",
+                    line=stmt.line,
+                    hint="'give' can only be used inside a function."
+                )
+            else:
+                self.analyze_return(stmt)
         elif isinstance(stmt, RaiseStatement):
             self.analyze_expression(stmt.value)
-        elif isinstance(stmt, (BreakStatement, SkipStatement)):
-            pass
+        elif isinstance(stmt, BreakStatement):
+            if self.loop_depth == 0:
+                self.add_error(
+                    "'break' used outside of a loop.",
+                    line=stmt.line,
+                    hint="'break' can only be used inside a loop."
+                )
+        elif isinstance(stmt, SkipStatement):
+            if self.loop_depth == 0:
+                self.add_error(
+                    "'skip' used outside of a loop.",
+                    line=stmt.line,
+                    hint="'skip' can only be used inside a loop."
+                )
         else:
             self.analyze_expression(stmt)
 
@@ -412,6 +433,7 @@ class NIMNASemanticAnalyzer:
         prev_return_type = self.current_return_type
         self.current_function    = stmt.name
         self.current_return_type = stmt.return_type
+        self.function_depth     += 1
         self.enter_scope()
         for param in stmt.params:
             self.declare(
@@ -421,6 +443,7 @@ class NIMNASemanticAnalyzer:
         for s in stmt.body:
             self.analyze_statement(s)
         self.exit_scope()
+        self.function_depth     -= 1
         self.current_function    = prev_function
         self.current_return_type = prev_return_type
 
@@ -497,6 +520,7 @@ class NIMNASemanticAnalyzer:
 
     def analyze_for(self, stmt):
         self.analyze_expression(stmt.range_expr)
+        self.loop_depth += 1
         self.enter_scope()
         self.declare(
             name=stmt.variable, kind="variable",
@@ -505,23 +529,29 @@ class NIMNASemanticAnalyzer:
         for s in stmt.body:
             self.analyze_statement(s)
         self.exit_scope()
+        self.loop_depth -= 1
 
     def analyze_while(self, stmt):
         self.analyze_expression(stmt.condition)
+        self.loop_depth += 1
         self.enter_scope()
         for s in stmt.body:
             self.analyze_statement(s)
         self.exit_scope()
+        self.loop_depth -= 1
 
     def analyze_do_until(self, stmt):
+        self.loop_depth += 1
         self.enter_scope()
         for s in stmt.body:
             self.analyze_statement(s)
         self.exit_scope()
+        self.loop_depth -= 1
         self.analyze_expression(stmt.condition)
 
     def analyze_foreach(self, stmt):
         self.analyze_expression(stmt.collection)
+        self.loop_depth += 1
         self.enter_scope()
         self.declare(
             name=stmt.variable, kind="variable",
@@ -530,9 +560,11 @@ class NIMNASemanticAnalyzer:
         for s in stmt.body:
             self.analyze_statement(s)
         self.exit_scope()
+        self.loop_depth -= 1
 
     def analyze_parallel(self, stmt):
         self.analyze_expression(stmt.range_expr)
+        self.loop_depth += 1
         self.enter_scope()
         self.declare(
             name=stmt.variable, kind="variable",
@@ -571,16 +603,29 @@ class NIMNASemanticAnalyzer:
         if self.current_return_type and value_type:
             if value_type == "Wild" or self.current_return_type == "Wild":
                 return
-            compatible, err_msg = self.is_compatible(
-                value_type, self.current_return_type
+            if value_type == self.current_return_type:
+                return
+            # Return safe conversions (no Text->Whole in return)
+            RETURN_SAFE = {
+                "Tiny"   : {"Short","Whole","Long","Huge","Decimal","Precise","Exact"},
+                "Short"  : {"Whole","Long","Huge","Decimal","Precise","Exact"},
+                "Whole"  : {"Long","Huge","Decimal","Precise","Exact"},
+                "Long"   : {"Huge","Precise","Exact"},
+                "Huge"   : {"Precise","Exact"},
+                "Decimal": {"Precise","Exact"},
+                "Precise": {"Exact"},
+                "Truth"  : {"Whole"},
+                "Letter" : {"Whole"},
+            }
+            if (value_type in RETURN_SAFE and
+                    self.current_return_type in RETURN_SAFE[value_type]):
+                return
+            self.add_error(
+                f"Return type mismatch in '{self.current_function}'. "
+                f"Expected '{self.current_return_type}' but got '{value_type}'.",
+                line=stmt.line,
+                hint="Change return type or convert the value."
             )
-            if not compatible:
-                self.add_error(
-                    f"Return type mismatch in '{self.current_function}'. "
-                    f"Expected '{self.current_return_type}' but got '{value_type}'.",
-                    line=stmt.line,
-                    hint="Change return type or convert the value."
-                )
 
 
     # ==========================================
@@ -656,6 +701,9 @@ class NIMNASemanticAnalyzer:
         return None
 
     def analyze_identifier(self, expr):
+        # Wildcard _ is always valid
+        if expr.name == "_":
+            return "Wild"
         sym = self.lookup(expr.name)
         if sym is None:
             self.add_error(
